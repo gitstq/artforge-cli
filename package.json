@@ -1,0 +1,59 @@
+{
+  "name": "artforge-local",
+  "version": "1.0.0",
+  "description": "轻量级本地AI图像生成与管理工具 - Lightweight Local AI Image Generation & Management Tool",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/main.js",
+    "dev": "nodemon src/main.js",
+    "build": "pkg . --out-path=dist/",
+    "build:win": "pkg . --targets=node18-win-x64 --out-path=dist/win/",
+    "build:mac": "pkg . --targets=node18-macos-x64 --out-path=dist/mac/",
+    "build:linux": "pkg . --targets=node18-linux-x64 --out-path=dist/linux/",
+    "test": "node --test src/**/*.test.js"
+  },
+  "keywords": [
+    "ai",
+    "image-generation",
+    "local",
+    "ollama",
+    "stable-diffusion",
+    "flux",
+    "creative-tools"
+  ],
+  "author": "Lobster",
+  "license": "MIT",
+  "bin": {
+    "artforge": "./src/main.js"
+  },
+  "pkg": {
+    "scripts": [
+      "src/**/*.js"
+    ],
+    "assets": [
+      "public/**/*",
+      "templates/**/*"
+    ]
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "chalk": "^5.3.0",
+    "inquirer": "^9.2.0",
+    "ora": "^8.0.0",
+    "fs-extra": "^11.2.0",
+    "axios": "^1.7.0",
+    "express": "^4.19.0",
+    "ws": "^8.17.0",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.33.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "pkg": "^5.11.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

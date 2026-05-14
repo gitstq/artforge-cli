@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArtForge Local - AI图像生成工具</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    header {
+      text-align: center;
+      padding: 40px 0;
+      color: white;
+    }
+    
+    header h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    header p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+    
+    .main-card {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      margin-bottom: 30px;
+    }
+    
+    .input-group {
+      margin-bottom: 25px;
+    }
+    
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #555;
+    }
+    
+    .input-group textarea {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 16px;
+      resize: vertical;
+      min-height: 120px;
+      transition: border-color 0.3s;
+    }
+    
+    .input-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .input-group select {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 16px;
+      background: white;
+      cursor: pointer;
+    }
+    
+    .input-group select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    
+    .option-item label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #555;
+      font-size: 14px;
+    }
+    
+    .option-item input,
+    .option-item select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    
+    .generate-btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .generate-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+    
+    .generate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .result-section {
+      margin-top: 30px;
+      display: none;
+    }
+    
+    .result-section.show {
+      display: block;
+    }
+    
+    .result-image {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      display: block;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    
+    .gallery-section {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .gallery-section h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    
+    .gallery-item {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+    
+    .gallery-item:hover {
+      transform: scale(1.05);
+    }
+    
+    .gallery-item img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #e0e0e0;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .error-message {
+      background: #ffebee;
+      color: #c62828;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 40px;
+      color: white;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎨 ArtForge Local</h1>
+      <p>轻量级本地AI图像生成与管理工具</p>
+    </header>
+    
+    <div class="main-card">
+      <div class="input-group">
+        <label for="prompt">描述你想要的图像</label>
+        <textarea id="prompt" placeholder="例如：一只可爱的橘猫在樱花树下打盹，阳光透过花瓣洒下，水彩风格，温暖柔和的光线..."></textarea>
+      </div>
+      
+      <div class="input-group">
+        <label for="model">选择模型</label>
+        <select id="model">
+          <option value="">加载中...</option>
+        </select>
+      </div>
+      
+      <div class="options-grid">
+        <div class="option-item">
+          <label for="width">宽度</label>
+          <select id="width">
+            <option value="512">512px</option>
+            <option value="768">768px</option>
+            <option value="1024" selected>1024px</option>
+            <option value="1280">1280px</option>
+          </select>
+        </div>
+        <div class="option-item">
+          <label for="height">高度</label>
+          <select id="height">
+            <option value="512">512px</option>
+            <option value="768">768px</option>
+            <option value="1024" selected>1024px</option>
+            <option value="1280">1280px</option>
+          </select>
+        </div>
+        <div class="option-item">
+          <label for="steps">步数</label>
+          <input type="number" id="steps" value="20" min="1" max="50">
+        </div>
+        <div class="option-item">
+          <label for="seed">种子 (可选)</label>
+          <input type="number" id="seed" placeholder="随机">
+        </div>
+      </div>
+      
+      <button class="generate-btn" id="generateBtn" onclick="generateImage()">
+        ✨ 生成图像
+      </button>
+      
+      <div id="loading" class="loading" style="display: none;">
+        <div class="spinner"></div>
+        <p>正在生成图像，请稍候...</p>
+      </div>
+      
+      <div id="error" class="error-message" style="display: none;"></div>
+      
+      <div id="result" class="result-section">
+        <h3 style="margin-bottom: 15px;">生成结果</h3>
+        <img id="resultImage" class="result-image" alt="生成的图像">
+        <div style="text-align: center; margin-top: 15px;">
+          <a id="downloadLink" href="#" download class="generate-btn" style="display: inline-block; width: auto; padding: 12px 30px; text-decoration: none;">
+            ⬇️ 下载图像
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="gallery-section">
+      <h2>🖼️ 我的图库</h2>
+      <div id="gallery" class="gallery-grid">
+        <p style="color: #999; grid-column: 1 / -1;">加载中...</p>
+      </div>
+    </div>
+    
+    <footer>
+      <p>ArtForge Local v1.0.0 | 本地优先的AI图像生成工具</p>
+    </footer>
+  </div>
+  
+  <script>
+    // 加载可用模型
+    async function loadModels() {
+      try {
+        const response = await fetch('/api/models');
+        const models = await response.json();
+        
+        const select = document.getElementById('model');
+        select.innerHTML = models.length > 0 
+          ? models.map(m => `<option value="${m.id}">${m.name} (${m.provider})</option>`).join('')
+          : '<option value="">无可用模型，请先配置API</option>';
+      } catch (error) {
+        console.error('加载模型失败:', error);
+      }
+    }
+    
+    // 加载图库
+    async function loadGallery() {
+      try {
+        const response = await fetch('/api/gallery');
+        const images = await response.json();
+        
+        const gallery = document.getElementById('gallery');
+        if (images.length === 0) {
+          gallery.innerHTML = '<p style="color: #999; grid-column: 1 / -1;">图库为空，生成你的第一张图像吧！</p>';
+          return;
+        }
+        
+        gallery.innerHTML = images.map(img => `
+          <div class="gallery-item" onclick="viewImage('${img.url}')">
+            <img src="${img.url}" alt="${img.metadata?.originalPrompt || '图像'}">
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('加载图库失败:', error);
+      }
+    }
+    
+    // 生成图像
+    async function generateImage() {
+      const prompt = document.getElementById('prompt').value.trim();
+      const model = document.getElementById('model').value;
+      const width = document.getElementById('width').value;
+      const height = document.getElementById('height').value;
+      const steps = document.getElementById('steps').value;
+      const seed = document.getElementById('seed').value;
+      
+      if (!prompt) {
+        showError('请输入图像描述');
+        return;
+      }
+      
+      if (!model) {
+        showError('请选择模型');
+        return;
+      }
+      
+      // 显示加载状态
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('error').style.display = 'none';
+      document.getElementById('result').classList.remove('show');
+      document.getElementById('generateBtn').disabled = true;
+      
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, model, width, height, steps, seed })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          document.getElementById('resultImage').src = result.imageUrl;
+          document.getElementById('downloadLink').href = result.imageUrl;
+          document.getElementById('result').classList.add('show');
+          loadGallery(); // 刷新图库
+        } else {
+          showError(result.error || '生成失败');
+        }
+      } catch (error) {
+        showError('请求失败: ' + error.message);
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('generateBtn').disabled = false;
+      }
+    }
+    
+    function showError(message) {
+      const errorDiv = document.getElementById('error');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+    }
+    
+    function viewImage(url) {
+      window.open(url, '_blank');
+    }
+    
+    // 初始化
+    loadModels();
+    loadGallery();
+  </script>
+</body>
+</html>
